@@ -29,17 +29,26 @@ public class PlatformsController : ControllerBase
     public ActionResult<PlatformReadDto> GetPlatformById(int id)
     {
         var platform = _repository.GetPlatformById(id);
-        if (platform is null)
-            return NotFound();
+        if (platform is not null)
+            return Ok(_mapper.Map<PlatformReadDto>(platform));
         
-        return Ok(_mapper.Map<PlatformReadDto>(platform));
+        return NotFound();
+        
+        
     }
 
     [HttpPost]
-    public void AddPlatform(PlatformCreateDto platform)
+    public ActionResult<PlatformReadDto> CreatePlatform(PlatformCreateDto createPlatform)
     {
-        _repository.CreatePlatform(_mapper.Map<Platform>(platform));
-        _repository.SaveChanges();
+        var platform = _mapper.Map<Platform>(createPlatform);
+        _repository.CreatePlatform(platform);
+
+        var platformReadDto = _mapper.Map<PlatformReadDto>(platform);
+        
+        if (_repository.SaveChanges())
+            return CreatedAtRoute(nameof(GetPlatformById), new {id=platformReadDto.Id}, platformReadDto);
+
+        return Problem();
     }
 
 }
