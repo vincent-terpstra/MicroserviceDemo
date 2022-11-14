@@ -14,7 +14,7 @@ public class PlatformRepo : IPlatformRepo
         return _context.SaveChanges() > 0;
     }
 
-    public IEnumerable<Platform?> GetAllPlatforms()
+    public IEnumerable<Platform> GetAllPlatforms()
     {
         return _context.Platforms.ToList();
     }
