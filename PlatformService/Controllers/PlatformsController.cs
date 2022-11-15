@@ -25,7 +25,7 @@ public class PlatformsController : ControllerBase
     }
 
     
-    [HttpGet("{id}", Name = "GetPlatformById")]
+    [HttpGet("{id:int}", Name = "GetPlatformById")]
     public ActionResult<PlatformReadDto> GetPlatformById(int id)
     {
         var platform = _repository.GetPlatformById(id);
@@ -33,8 +33,6 @@ public class PlatformsController : ControllerBase
             return Ok(_mapper.Map<PlatformReadDto>(platform));
         
         return NotFound();
-        
-        
     }
 
     [HttpPost]
