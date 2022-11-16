@@ -39,7 +39,7 @@ try
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "A fatal error occured while running the app!");
+    Log.Logger.Fatal(ex, "A fatal error occured while running the app!");
 }
 finally
 {
