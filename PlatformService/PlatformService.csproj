@@ -16,6 +16,12 @@
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.0" />
+        <PackageReference Include="Serilog" Version="2.12.1-dev-01587" />
+        <PackageReference Include="Serilog.AspNetCore" Version="6.1.0-dev-00285" />
+        <PackageReference Include="Serilog.Extensions.Hosting" Version="5.0.1" />
+        <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.1-dev-10301" />
+        <PackageReference Include="Serilog.Settings.AppSettings" Version="2.2.3-dev-00066" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="4.1.1-dev-00896" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     </ItemGroup>
 

@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using PlatformService.Data;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-
 
 
 // Add services to the container.
@@ -15,7 +15,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
+builder.Host.UseSerilog(
+    (context, config)=> config.ReadFrom.Configuration(context.Configuration));
 
 var app = builder.Build();
 
@@ -31,6 +32,16 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-app.PrepPopulation();
-
-app.Run();
+app.PrepPopulation(Log.Logger);
+try
+{
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "A fatal error occured while running the app!");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

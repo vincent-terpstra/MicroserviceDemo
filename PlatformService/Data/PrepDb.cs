@@ -2,18 +2,17 @@
 
 public static class PrepDb
 {
-    public static void PrepPopulation(this IApplicationBuilder app)
+    public static void PrepPopulation(this IApplicationBuilder app, Serilog.ILogger logger)
     {
         using var serviceScope = app.ApplicationServices.CreateScope();
-        SeedData(serviceScope.ServiceProvider.GetService<AppDbContext>()!);
+        SeedData(serviceScope.ServiceProvider.GetService<AppDbContext>()!, logger);
     }
 
-    private static void SeedData(AppDbContext context)
+    private static void SeedData(AppDbContext context, Serilog.ILogger logger)
     {
         if (context.Platforms.Any() == false)
         {
-            //TODO use ILogger
-            Console.WriteLine("--> Seeding Data");
+            logger.Information("Seeding Data");
             context.Platforms.AddRange(
                 new []
                 {
@@ -28,8 +27,7 @@ public static class PrepDb
         }
         else
         {
-            //TODO use ILogger
-            Console.WriteLine("--> We already have data");   
+            logger.Information("We already have data");
         }
     }
 }
