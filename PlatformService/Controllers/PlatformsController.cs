@@ -48,22 +48,23 @@ public class PlatformsController : ControllerBase
         var platform = _mapper.Map<Platform>(createPlatform);
         _repository.CreatePlatform(platform);
 
-        var platformReadDto = _mapper.Map<PlatformReadDto>(platform);
-
-        try
-        {
-            await _commandDataClient.SendPlatformToCommandAsync(platformReadDto);
-        }
-        catch (Exception ex)
-        {
-            // ignored
-            _logger.LogError(ex, "Unable to post to Command Service");
-            
-        }
-
         if (_repository.SaveChanges())
-            return CreatedAtRoute(nameof(GetPlatformById), new {id=platformReadDto.Id}, platformReadDto);
-
+        {   //NOTE the platform is not updated (with ID) until save changes is called
+            var platformReadDto = _mapper.Map<PlatformReadDto>(platform);
+            try
+            {
+                //Testing communications between services
+                await _commandDataClient.SendPlatformToCommandAsync(platformReadDto);
+            }
+            catch (Exception ex)
+            {
+                // ignored
+                _logger.LogError(ex, "Unable to post to Command Service");
+                
+            }
+            return CreatedAtRoute(nameof(GetPlatformById), new {id=platform.Id}, platformReadDto);
+        }
+        
         return Problem();
     }
 
