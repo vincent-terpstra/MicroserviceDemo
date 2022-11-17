@@ -14,6 +14,7 @@ public class HttpCommandDataClient :ICommandDataClient
         _logger = logger;
         _httpClient = httpClient;
         _config = config;
+        logger.LogInformation("Command Service {CommandService}", _config["CommandService"]);
     }
     
     public async Task SendPlatformToCommandAsync(PlatformReadDto platform)
