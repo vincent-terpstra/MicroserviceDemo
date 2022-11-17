@@ -5,11 +5,21 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 // Add services to the container.
-builder.Services.AddDbContext<AppDbContext>(
-        opt => opt.UseInMemoryDatabase("InMem")
+if (builder.Environment.IsProduction())
+{
+    Console.WriteLine("-->Using SqlServer.db");
+    builder.Services.AddDbContext<AppDbContext>(
+        opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("mysql"))
     );
+}
+else
+{
+    Console.WriteLine("--> Using InMem Db");
+    builder.Services.AddDbContext<AppDbContext>(
+        opt => opt.UseInMemoryDatabase("InMem"));    
+}
+
 builder.Services.AddScoped<IPlatformRepo, PlatformRepo>();
 builder.Services.AddControllers();
 builder.Services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>();
@@ -34,7 +44,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-app.PrepPopulation(Log.Logger);
+app.PrepPopulation(Log.Logger, app.Environment.IsProduction());
 try
 {
     app.Run();
