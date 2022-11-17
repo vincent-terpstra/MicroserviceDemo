@@ -1,3 +1,5 @@
+using CommandService.Controllers;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -19,7 +21,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+app.MapPlatformController();
 
-app.MapControllers();
+//app.MapControllers();
 
 app.Run();

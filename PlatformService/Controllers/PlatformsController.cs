@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using PlatformService.Data;
+using PlatformService.SyncDataServices.Http;
 
 namespace PlatformService.Controllers;
 
@@ -8,13 +9,19 @@ namespace PlatformService.Controllers;
 [ApiController]
 public class PlatformsController : ControllerBase
 {
+    private readonly ILogger<PlatformsController> _logger;
     private readonly IPlatformRepo _repository;
     private readonly IMapper _mapper;
-    
-    public PlatformsController(IPlatformRepo repository, IMapper mapper)
+    private readonly ICommandDataClient _commandDataClient;
+
+    public PlatformsController(
+        ILogger<PlatformsController> logger,
+        IPlatformRepo repository, IMapper mapper, ICommandDataClient commandDataClient)
     {
+        _logger = logger;
         _repository = repository;
         _mapper = mapper;
+        _commandDataClient = commandDataClient;
     }
 
     [HttpGet]
@@ -36,13 +43,24 @@ public class PlatformsController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<PlatformReadDto> CreatePlatform(PlatformCreateDto createPlatform)
+    public async Task<ActionResult<PlatformReadDto>> CreatePlatform(PlatformCreateDto createPlatform)
     {
         var platform = _mapper.Map<Platform>(createPlatform);
         _repository.CreatePlatform(platform);
 
         var platformReadDto = _mapper.Map<PlatformReadDto>(platform);
-        
+
+        try
+        {
+            await _commandDataClient.SendPlatformToCommandAsync(platformReadDto);
+        }
+        catch (Exception ex)
+        {
+            // ignored
+            _logger.LogError(ex, "Unable to post to Command Service");
+            
+        }
+
         if (_repository.SaveChanges())
             return CreatedAtRoute(nameof(GetPlatformById), new {id=platformReadDto.Id}, platformReadDto);
 
