@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using PlatformService.AsyncDataServices;
 using PlatformService.Data;
 using PlatformService.SyncDataServices.Http;
 
@@ -10,15 +11,18 @@ namespace PlatformService.Controllers;
 public class PlatformsController : ControllerBase
 {
     private readonly ILogger<PlatformsController> _logger;
+    private readonly IMessageBusClient _messageBusClient;
     private readonly IPlatformRepo _repository;
     private readonly IMapper _mapper;
     private readonly ICommandDataClient _commandDataClient;
 
     public PlatformsController(
         ILogger<PlatformsController> logger,
+        IMessageBusClient messageBusClient,
         IPlatformRepo repository, IMapper mapper, ICommandDataClient commandDataClient)
     {
         _logger = logger;
+        _messageBusClient = messageBusClient;
         _repository = repository;
         _mapper = mapper;
         _commandDataClient = commandDataClient;
@@ -51,6 +55,8 @@ public class PlatformsController : ControllerBase
         if (_repository.SaveChanges())
         {   //NOTE the platform is not updated (with ID) until save changes is called
             var platformReadDto = _mapper.Map<PlatformReadDto>(platform);
+            
+            //Send sync message
             try
             {
                 //Testing communications between services
@@ -60,6 +66,19 @@ public class PlatformsController : ControllerBase
             {
                 // ignored
                 _logger.LogError(ex, "Unable to post to Command Service");
+            }
+            
+            //Send Async message
+            try
+            {
+                var platformPublish = _mapper.Map<PlatformPublishedDto>(platform);
+                platformPublish.Event = "Platform_Published";
+                _messageBusClient.PublishNewPlatform(platformPublish);
+            } 
+            catch (Exception ex)
+            {
+                // ignored
+                _logger.LogError(ex, "Unable to post to Rabbit MQ service");
                 
             }
             return CreatedAtRoute(nameof(GetPlatformById), new {id=platform.Id}, platformReadDto);
